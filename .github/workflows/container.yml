@@ -1,7 +1,6 @@
 name: deploy-container
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - master
@@ -21,18 +20,13 @@ jobs:
       - run: npm install
       - run: npm run build
 
-      - uses: ItsKarma/aws-cli@v1.70.0
+      - uses: jakejarvis/s3-sync-action@master
         with:
-          args: s3 sync p--delete --acl public-read packages/container/dist/ s3://${{ secrets.AWS_S3_BUCKET_NAME }}/container/latest/
+          args: --acl public-read --follow-symlinks --delete --exclude '.git/*'
         env:
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET_NAME }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - uses: ItsKarma/aws-cli@v1.70.0
-        with:
-          args: cloudfront create-invalidation --distribution-id ${{ secrets.AWS_DISTRIBUTION_ID }} --paths "/container/latest/index.html"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          SOURCE_DIR: 'packages/container/dist'
+          DEST_DIR: 'container/latest'
