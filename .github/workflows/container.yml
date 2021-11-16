@@ -16,13 +16,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: "build"
-        uses: actions/checkout@v2
-        run: npm install
-        run: npm run build
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: npm run build
 
-      - name: "deploy"
-        uses: jakejarvis/s3-sync-action@master
+      - uses: jakejarvis/s3-sync-action@master
         with:
           args: --acl public-read --follow-symlinks --delete --exclude '.git/*'
         env:
